@@ -1,0 +1,294 @@
+/* ==========================================================================
+   Toko Berkah Sekar - Point of Sale (Kasir) & Barcode Scanner Styling
+   ========================================================================== */
+
+/* POS Layout Container */
+.pos-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Search and Barcode Header */
+.pos-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pos-search-wrapper {
+  flex: 1;
+}
+
+/* Product Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Product Card */
+.pos-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 125px;
+}
+
+.pos-card:hover {
+  border-color: var(--primary-500);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.pos-card:active {
+  transform: scale(0.96);
+}
+
+.pos-card.out-of-stock {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.8);
+}
+
+.pos-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.pos-card-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pos-card-price {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--primary-400);
+}
+
+.pos-card-stock {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pos-card-badge-cart {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary-500);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+  animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+/* Floating Bottom Cart Bar (Mobile-first) */
+.floating-cart-bar {
+  position: fixed;
+  bottom: calc(var(--nav-bottom-height) + var(--safe-bottom) + 10px);
+  left: 16px;
+  right: 16px;
+  max-width: 736px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #064e3b, #047857);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(16, 185, 129, 0.4);
+  z-index: 35;
+  cursor: pointer;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (min-width: 1024px) {
+  .floating-cart-bar {
+    max-width: 1068px;
+  }
+}
+
+.cart-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-bar-count {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.cart-bar-total {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* Cart Item Rows inside Checkout Modal */
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cart-item {
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.cart-item-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.cart-qty-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.qty-display {
+  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Payment Quick Nominal Suggestions */
+.quick-cash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quick-cash-btn {
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  border-radius: var(--radius-xs);
+}
+
+.quick-cash-btn:hover, .quick-cash-btn.active {
+  background: var(--primary-600);
+  color: white;
+  border-color: var(--primary-500);
+}
+
+/* Camera Barcode Scanner Viewport */
+.scanner-container {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+}
+
+#reader {
+  width: 100%;
+}
+
+.scanner-laser {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+  animation: scanLaser 2s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes scanLaser {
+  0% { top: 15%; opacity: 0.2; }
+  50% { top: 85%; opacity: 1; }
+  100% { top: 15%; opacity: 0.2; }
+}

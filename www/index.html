@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#059669">
+  <meta name="description" content="Aplikasi Pencatatan Toko & POS Kasir Modern untuk Android dan Web">
+  <link rel="manifest" href="manifest.json">
+  <title>Toko Berkah Sekar - Pencatatan Toko & Kasir</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pos.css">
+  <link rel="stylesheet" href="css/receipt.css">
+
+  <!-- HTML5 QR Code Barcode Scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- TOP APP BAR -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="header-logo">🏪</div>
+        <div class="header-info">
+          <h1 id="header-store-name">Toko Berkah Sekar</h1>
+          <span id="user-role-badge" class="badge-role badge-owner" title="Klik untuk beralih role">Owner</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-toggle-theme" class="icon-btn" title="Ganti Tema" onclick="window.app.toggleTheme()">
+          <span id="theme-toggle-icon">☀️</span>
+        </button>
+        <button class="icon-btn" title="Pengaturan Toko" onclick="window.app.switchTab('settings')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN APP VIEWS -->
+    <main class="app-content">
+      
+      <!-- VIEW 1: KASIR (POS) -->
+      <section id="view-pos" class="app-view">
+        <div class="pos-layout">
+          <!-- Search & Barcode Scan Actions -->
+          <div class="pos-header-actions">
+            <div class="input-with-icon pos-search-wrapper">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <label for="pos-search-input" style="display: none;">Cari Produk</label>
+              <input type="text" id="pos-search-input" class="form-control" placeholder="Cari nama produk atau ketik barcode..." oninput="window.pos.searchQuery = this.value.toLowerCase().trim(); window.pos.renderProducts();">
+            </div>
+            <button id="btn-scan-barcode" class="btn btn-secondary" title="Scan Kamera Barcode" style="padding: 10px 14px;" onclick="window.pos.openBarcodeScannerModal()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div id="pos-category-filters" class="filter-scroll">
+            <!-- Rendered by pos.js -->
+          </div>
+
+          <!-- Product Grid -->
+          <div id="pos-product-grid" class="product-grid">
+            <!-- Rendered by pos.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: STOK & INVENTARIS -->
+      <section id="view-inventory" class="app-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">Manajemen Stok</h2>
+            <p class="text-xs text-muted">Kelola harga beli, harga jual, dan persediaan barang</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-manage-categories" class="btn btn-secondary btn-sm" onclick="window.products.openCategoryManagerModal()">
+              🏷 Kategori
+            </button>
+            <button id="btn-add-product" class="btn btn-primary btn-sm" onclick="window.products.openProductFormModal()">
+              + Produk
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-with-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <label for="inventory-search-input" style="display: none;">Cari Barang</label>
+            <input type="text" id="inventory-search-input" class="form-control" placeholder="Cari nama barang atau barcode..." oninput="window.products.onSearch(this.value)">
+          </div>
+        </div>
+
+        <div id="inventory-category-filters" class="filter-scroll">
+          <!-- Rendered by products.js -->
+        </div>
+
+        <div id="inventory-products-list" class="data-list">
+          <!-- Rendered by products.js -->
+        </div>
+      </section>
+
+      <!-- VIEW 3: PENGELUARAN OPERASIONAL -->
+      <section id="view-expenses" class="app-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">Catatan Pengeluaran</h2>
+            <p class="text-xs text-muted">Biaya operasional toko (listrik, gaji, sewa, plastik)</p>
+          </div>
+          <button id="btn-add-expense" class="btn btn-danger btn-sm" onclick="window.expenses.openExpenseModal()">
+            + Catat Biaya
+          </button>
+        </div>
+
+        <!-- Monthly Expense Metric Card -->
+        <div class="stat-card card-danger" style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="stat-label">Total Pengeluaran Bulan Ini</div>
+            <label for="expense-month-picker" style="display: none;">Pilih Bulan</label>
+            <input type="month" id="expense-month-picker" class="form-control" style="width: auto; padding: 4px 8px; font-size: 0.8rem;">
+          </div>
+          <div id="expense-total-display" class="stat-value text-danger" style="font-size: 1.5rem; margin-top: 6px;">
+            Rp 0
+          </div>
+          <div class="stat-desc">Otomatis mengurangi laba bersih pada laporan keuangan</div>
+        </div>
+
+        <div id="expenses-list-container" class="data-list">
+          <!-- Rendered by expenses.js -->
+        </div>
+      </section>
+
+      <!-- VIEW 4: BUKU KASBON (HUTANG & PIUTANG) -->
+      <section id="view-debts" class="app-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">Buku Kasbon & Hutang</h2>
+            <p class="text-xs text-muted">Catatan piutang pelanggan dan tagihan supplier</p>
+          </div>
+          <button id="btn-add-debt" class="btn btn-accent btn-sm" onclick="window.debts.openDebtFormModal()">
+            + Tambah
+          </button>
+        </div>
+
+        <!-- Debts Stat Grid -->
+        <div class="stat-grid">
+          <div class="stat-card card-accent">
+            <div class="stat-label">Piutang Pelanggan</div>
+            <div id="total-receivables-stat" class="stat-value" style="color: var(--accent-500);">Rp 0</div>
+            <div class="stat-desc">Belum dibayar oleh pembeli</div>
+          </div>
+          <div class="stat-card card-warning">
+            <div class="stat-label">Hutang ke Supplier</div>
+            <div id="total-payables-stat" class="stat-value" style="color: var(--warning-500);">Rp 0</div>
+            <div class="stat-desc">Tagihan kulakan barang</div>
+          </div>
+        </div>
+
+        <!-- Type Selector Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button class="btn btn-secondary btn-sm debt-type-tab active" data-type="receivable" style="flex: 1;">
+            👤 Piutang Pelanggan
+          </button>
+          <button class="btn btn-secondary btn-sm debt-type-tab" data-type="payable" style="flex: 1;">
+            🏢 Hutang ke Supplier
+          </button>
+        </div>
+
+        <div id="debts-list-container" class="data-list">
+          <!-- Rendered by debts.js -->
+        </div>
+      </section>
+
+      <!-- VIEW 5: LAPORAN KEUANGAN & LABA RUGI -->
+      <section id="view-reports" class="app-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">Laporan & Analitik</h2>
+            <p class="text-xs text-muted">Rekapitulasi penjualan, omset, dan laba bersih</p>
+          </div>
+          <label for="report-date-filter" style="display: none;">Filter Tanggal Laporan</label>
+          <select id="report-date-filter" class="select" style="width: auto; padding: 6px 10px; font-size: 0.8rem;">
+            <option value="today">Hari Ini</option>
+            <option value="yesterday">Kemarin</option>
+            <option value="7days">7 Hari Terakhir</option>
+            <option value="this_month">Bulan Ini</option>
+            <option value="all">Semua Waktu</option>
+          </select>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="stat-grid stat-grid-4">
+          <div class="stat-card">
+            <div class="stat-label">Total Omset</div>
+            <div id="report-stat-revenue" class="stat-value text-primary">Rp 0</div>
+            <div class="stat-desc">Penjualan kotor</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Transaksi</div>
+            <div id="report-stat-trx-count" class="stat-value">0 Trx</div>
+            <div class="stat-desc">Jumlah nota</div>
+          </div>
+          <div class="stat-card card-warning owner-only">
+            <div class="stat-label">Modal (HPP)</div>
+            <div id="report-stat-cost" class="stat-value">Rp 0</div>
+            <div class="stat-desc">Harga pokok barang</div>
+          </div>
+          <div class="stat-card card-danger owner-only">
+            <div class="stat-label">Pengeluaran</div>
+            <div id="report-stat-expense" class="stat-value text-danger">Rp 0</div>
+            <div class="stat-desc">Biaya operasional</div>
+          </div>
+        </div>
+
+        <!-- Net Profit Highlight Card -->
+        <div class="card owner-only" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 78, 59, 0.25)); border-color: rgba(16, 185, 129, 0.4); margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="stat-label" style="color: var(--primary-400);">📈 Estimasi Laba Bersih Toko</div>
+              <div id="report-stat-net-profit" class="stat-value text-primary" style="font-size: 1.6rem; margin-top: 4px;">
+                Rp 0
+              </div>
+              <div class="stat-desc">Formula: Omset - Modal HPP - Biaya Operasional</div>
+            </div>
+            <button id="btn-send-daily-tg" class="btn btn-secondary btn-sm" title="Kirim ringkasan ke Telegram">
+              ✈️ Kirim ke Telegram
+            </button>
+          </div>
+        </div>
+
+        <!-- Sales Trend Line Chart -->
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="card-header">
+            <div class="card-title">📊 Tren Omset Penjualan</div>
+          </div>
+          <div style="width: 100%; height: 160px; position: relative;">
+            <canvas id="sales-trend-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="card-header">
+            <div class="card-title">🔥 5 Produk Terlaris</div>
+          </div>
+          <div id="top-selling-products-list" class="data-list">
+            <!-- Rendered by reports.js -->
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🧾 Riwayat Transaksi</div>
+            <button id="btn-export-excel" class="btn btn-secondary btn-sm">
+              📥 Export Excel (.CSV)
+            </button>
+          </div>
+          <div id="recent-transactions-list" class="data-list">
+            <!-- Rendered by reports.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: PENGATURAN TOKO -->
+      <section id="view-settings" class="app-view hidden">
+        <div style="margin-bottom: 16px;">
+          <h2 style="font-size: 1.15rem; font-weight: 700;">Pengaturan Aplikasi</h2>
+          <p class="text-xs text-muted">Kelola data profil toko, struk, keamanan PIN, dan notifikasi</p>
+        </div>
+
+        <form id="settings-form" onsubmit="event.preventDefault(); window.app.saveSettings();">
+          <!-- Store Profile Card -->
+          <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title" style="margin-bottom: 12px;">🏪 Profil Toko & Struk</div>
+            <div class="form-group">
+              <label for="settings-store-name" class="form-label">Nama Toko</label>
+              <input type="text" id="settings-store-name" class="form-control" placeholder="Contoh: Toko Berkah Sejahtera">
+            </div>
+            <div class="form-group">
+              <label for="settings-store-address" class="form-label">Alamat Toko</label>
+              <input type="text" id="settings-store-address" class="form-control" placeholder="Alamat lengkap...">
+            </div>
+            <div class="form-group">
+              <label for="settings-store-phone" class="form-label">No. Telepon / WhatsApp Toko</label>
+              <input type="text" id="settings-store-phone" class="form-control" placeholder="0812xxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label for="settings-receipt-footer" class="form-label">Pesan Bawah Struk (Footer)</label>
+              <input type="text" id="settings-receipt-footer" class="form-control" placeholder="Pesan terima kasih...">
+            </div>
+            <div class="form-group">
+              <label for="settings-printer-width" class="form-label">Ukuran Kertas Struk Thermal</label>
+              <select id="settings-printer-width" class="select">
+                <option value="58mm">58mm (Printer Kasir Bluetooth Standar)</option>
+                <option value="80mm">80mm (Printer Kasir Lebar / Desktop)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Telegram Bot Integration Card -->
+          <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title" style="margin-bottom: 12px;">✈️ Integrasi Bot Telegram</div>
+            <p class="text-xs text-muted" style="margin-bottom: 10px;">
+              Kirim notifikasi penjualan otomatis & rekap tutup kasir harian ke Telegram Anda.
+            </p>
+            <div class="form-group">
+              <label for="settings-tg-token" class="form-label">Telegram Bot Token (dari @BotFather)</label>
+              <input type="text" id="settings-tg-token" class="form-control" placeholder="Contoh: 123456789:ABCdefGHIjklMNO...">
+            </div>
+            <div class="form-group">
+              <label for="settings-tg-chat-id" class="form-label">Telegram Chat ID (ID Akun/Grup Anda)</label>
+              <input type="text" id="settings-tg-chat-id" class="form-control" placeholder="Contoh: 123456789 atau -100xxxx">
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.notifications.sendTelegramMessage('🔔 Tes Notifikasi Berhasil dari Toko Berkah Sekar!')">
+              ⚡ Tes Kirim Pesan ke Telegram
+            </button>
+          </div>
+
+          <!-- Security & PIN Card -->
+          <div class="card" style="margin-bottom: 14px;">
+            <div class="card-title" style="margin-bottom: 12px;">🔒 Keamanan & PIN Hak Akses</div>
+            <div class="form-group">
+              <label for="settings-owner-pin" class="form-label">PIN Pemilik Toko (4 Angka)</label>
+              <input type="password" maxlength="4" id="settings-owner-pin" class="form-control" placeholder="1234">
+            </div>
+            <div class="form-group">
+              <label for="settings-cashier-pin" class="form-label">PIN Kasir (4 Angka)</label>
+              <input type="password" maxlength="4" id="settings-cashier-pin" class="form-control" placeholder="0000">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 16px;">
+            💾 Simpan Semua Pengaturan
+          </button>
+        </form>
+
+        <!-- Backup & Restore Data Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-title" style="margin-bottom: 8px;">💾 Cadangkan & Pulihkan Data</div>
+          <p class="text-xs text-muted" style="margin-bottom: 12px;">
+            Aplikasi berjalan 100% offline. Simpan file backup JSON ke Google Drive atau WhatsApp untuk keamanan data jika ganti HP.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.exportBackupFile()">
+              📥 Download Backup (.JSON)
+            </button>
+            <label for="import-backup-file" class="btn btn-outline btn-sm" style="cursor: pointer;">
+              📤 Pulihkan Backup
+              <input type="file" id="import-backup-file" accept=".json" style="display: none;" onchange="window.app.importBackupFile(this.files[0])">
+            </label>
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.db.seedInitialData().then(() => { window.app.showToast('Data produk awal berhasil dimuat!', 'success'); setTimeout(() => location.reload(), 600); })">
+              🔄 Muat Data Produk Awal
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FLOATING CART INDICATOR (MOBILE) -->
+    <div id="floating-cart-bar" class="floating-cart-bar hidden">
+      <div class="cart-bar-left">
+        <span id="cart-bar-count" class="cart-bar-count">0 Item</span>
+        <div>
+          <div style="font-size: 0.72rem; opacity: 0.85;">Total Belanja</div>
+          <div id="cart-bar-total" class="cart-bar-total">Rp 0</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="background: white; color: #064e3b; font-weight: 800; padding: 8px 16px;">
+        Bayar ➔
+      </button>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="pos" onclick="window.app.switchTab('pos')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <span>Kasir</span>
+        <span id="nav-cart-badge" class="nav-badge-cart hidden">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="inventory" onclick="window.app.switchTab('inventory')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <span>Stok</span>
+      </button>
+
+      <button class="nav-item" data-tab="expenses" onclick="window.app.switchTab('expenses')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <span>Biaya</span>
+      </button>
+
+      <button class="nav-item" data-tab="debts" onclick="window.app.switchTab('debts')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <span>Kasbon</span>
+      </button>
+
+      <button class="nav-item" data-tab="reports" onclick="window.app.switchTab('reports')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span>Laporan</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: CHECKOUT / PEMBAYARAN KASIR -->
+  <div id="checkout-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Keranjang & Pembayaran</div>
+        <button class="icon-btn" onclick="window.app.closeModal('checkout-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Cart items list -->
+        <div id="checkout-cart-items" class="cart-list" style="margin-bottom: 14px;"></div>
+
+        <!-- Subtotals and Discount -->
+        <div class="card" style="margin-bottom: 14px;">
+          <div class="receipt-total-row">
+            <span>Subtotal Belanja</span>
+            <span id="checkout-subtotal" class="font-mono font-bold">Rp 0</span>
+          </div>
+          <div class="form-group" style="margin: 8px 0 0;">
+            <label for="checkout-discount-input" class="form-label" style="font-size: 0.75rem;">Potongan / Diskon (Rp)</label>
+            <input type="number" id="checkout-discount-input" class="form-control" placeholder="0" value="0">
+          </div>
+          <div class="receipt-total-row receipt-total-bold" style="border-top: 1px dashed var(--border-subtle); padding-top: 8px; margin-top: 8px; font-size: 1.1rem; color: var(--primary-400);">
+            <span>TOTAL BAYAR</span>
+            <span id="checkout-grand-total" class="font-mono">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div class="form-group">
+          <label class="form-label">Metode Pembayaran</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+            <button type="button" class="btn btn-secondary btn-sm payment-method-btn active" data-method="cash">
+              💵 Tunai
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm payment-method-btn" data-method="qris">
+              📱 QRIS
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm payment-method-btn" data-method="debt">
+              📝 Kasbon
+            </button>
+          </div>
+        </div>
+
+        <!-- Cash Payment Section -->
+        <div id="payment-cash-section">
+          <div class="form-group">
+            <label for="checkout-cash-received" class="form-label">Uang Diterima (Rp)</label>
+            <input type="number" id="checkout-cash-received" class="form-control" placeholder="Masukkan jumlah uang...">
+          </div>
+          <div id="quick-cash-container" class="quick-cash-grid"></div>
+          <div class="card" style="margin-top: 12px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600;">Kembalian:</span>
+            <span id="checkout-change-display" class="font-mono font-bold" style="font-size: 1.1rem; color: var(--primary-400);">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- QRIS Payment Section -->
+        <div id="payment-qris-section" class="hidden text-center" style="padding: 16px;">
+          <div style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-secondary);">Tunjukkan kode QRIS ke pembeli:</div>
+          <div style="background: white; padding: 16px; border-radius: var(--radius-md); display: inline-block; box-shadow: var(--shadow-md);">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=00020101021126580014ID.LINKAJA.WWW01189360091100223048255204581253033605802ID5910TOKOKU-POS6007JAKARTA61051234062070703A016304" alt="QRIS" width="160" height="160">
+          </div>
+          <div class="text-xs text-muted" style="margin-top: 8px;">Scan via BCA, Mandiri, BRI, GoPay, OVO, Dana, ShopeePay</div>
+        </div>
+
+        <!-- Debt/Kasbon Section -->
+        <div id="payment-debt-section" class="hidden">
+          <div class="form-group">
+            <label for="debt-customer-name" class="form-label">Nama Pelanggan (Wajib)</label>
+            <input type="text" id="debt-customer-name" class="form-control" placeholder="Nama lengkap pembeli...">
+          </div>
+          <div class="form-group">
+            <label for="debt-customer-phone" class="form-label">No. WhatsApp Pelanggan</label>
+            <input type="text" id="debt-customer-phone" class="form-control" placeholder="08xxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label for="debt-due-date" class="form-label">Tanggal Janji Bayar (Jatuh Tempo)</label>
+            <input type="date" id="debt-due-date" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.pos.clearCart()">Batalkan</button>
+        <button class="btn btn-primary" onclick="window.pos.processPayment()">Selesaikan Transaksi ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUCCESS TRANSAKSI & CETAK STRUK -->
+  <div id="success-trx-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">🎉 Transaksi Berhasil!</div>
+        <button class="icon-btn" onclick="window.app.closeModal('success-trx-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 14px;">
+          <div style="font-size: 2.5rem;">✅</div>
+          <div style="font-weight: 700; font-size: 1.1rem; margin-top: 4px;" id="success-trx-id">TRX-001</div>
+          <div class="font-mono font-bold text-primary" style="font-size: 1.4rem;" id="success-trx-total">Rp 0</div>
+        </div>
+
+        <!-- Thermal Receipt Preview -->
+        <div id="success-receipt-preview"></div>
+      </div>
+      <div class="modal-footer" style="flex-wrap: wrap;">
+        <button id="btn-share-receipt-wa" class="btn btn-secondary" style="color: #22c55e;">
+          💬 WhatsApp
+        </button>
+        <button id="btn-print-receipt" class="btn btn-primary">
+          🖨️ Cetak Struk
+        </button>
+        <button class="btn btn-outline" onclick="window.app.closeModal('success-trx-modal')">
+          Transaksi Baru
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BARCODE SCANNER (KAMERA HP) -->
+  <div id="scanner-modal" class="modal-backdrop">
+    <div class="modal-sheet" style="max-height: 80vh;">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Pemindai Barcode Kamera</div>
+        <button class="icon-btn" onclick="window.pos.closeBarcodeScannerModal()">✕</button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-xs text-muted" style="margin-bottom: 12px;">Arahkan kamera HP ke barcode kemasan produk</p>
+        <div class="scanner-container">
+          <div id="reader"></div>
+          <div class="scanner-laser"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-block" onclick="window.pos.closeBarcodeScannerModal()">Tutup Pemindai</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FORM PRODUK (TAMBAH/EDIT) -->
+  <div id="product-form-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div id="product-form-title" class="modal-title">Tambah Produk Baru</div>
+        <button class="icon-btn" onclick="window.app.closeModal('product-form-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" onsubmit="event.preventDefault(); window.products.saveProduct();">
+          <input type="hidden" id="prod-form-id">
+          <div class="form-group">
+            <label for="prod-form-name" class="form-label">Nama Produk (Wajib)</label>
+            <input type="text" id="prod-form-name" class="form-control" placeholder="Contoh: Beras Ramos 5kg" required>
+          </div>
+          <div class="form-group">
+            <label for="prod-form-barcode" class="form-label">Barcode / Kode SKU (Opsional)</label>
+            <input type="text" id="prod-form-barcode" class="form-control" placeholder="899xxxx">
+          </div>
+          <div class="form-group">
+            <label for="prod-form-category" class="form-label">Kategori</label>
+            <select id="prod-form-category" class="select"></select>
+          </div>
+          <div class="stat-grid" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="prod-form-cost" class="form-label">Harga Modal / Beli (Rp)</label>
+              <input type="number" id="prod-form-cost" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="prod-form-sell" class="form-label">Harga Jual (Rp) *</label>
+              <input type="number" id="prod-form-sell" class="form-control" placeholder="0" required>
+            </div>
+          </div>
+          <div class="stat-grid" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="prod-form-stock" class="form-label">Stok Awal</label>
+              <input type="number" id="prod-form-stock" class="form-control" placeholder="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="prod-form-unit" class="form-label">Satuan</label>
+              <input type="text" id="prod-form-unit" class="form-control" placeholder="pcs / kg / btl" value="pcs">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="prod-form-min-stock" class="form-label">Batas Minimum Peringatan Stok</label>
+            <input type="number" id="prod-form-min-stock" class="form-control" placeholder="5" value="5">
+          </div>
+
+          <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 14px;">
+            <button type="button" id="btn-delete-product" class="btn btn-outline text-danger hidden" onclick="window.products.deleteProduct()">
+              Hapus Produk
+            </button>
+            <button type="submit" class="btn btn-primary" style="margin-left: auto;">
+              Simpan Produk
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PENYESUAIAN STOK -->
+  <div id="stock-adjust-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Penyesuaian Stok</div>
+        <button class="icon-btn" onclick="window.app.closeModal('stock-adjust-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="adjust-prod-id">
+        <div style="margin-bottom: 12px;">
+          <div id="adjust-prod-name" style="font-weight: 700; font-size: 1.1rem;">Nama Produk</div>
+          <div class="text-xs text-muted">Stok saat ini: <strong id="adjust-current-stock" class="text-primary font-mono">0</strong></div>
+        </div>
+
+        <div class="form-group">
+          <label for="adjust-type-select" class="form-label">Jenis Penyesuaian</label>
+          <select id="adjust-type-select" class="select">
+            <option value="in">➕ Tambah Stok (Kulakan / Restock Masuk)</option>
+            <option value="out">➖ Kurangi Stok (Barang Rusak / Kadaluarsa / Hilang)</option>
+            <option value="set">🔄 Tetapkan Jumlah Stok Baru (Opname Fisik)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="adjust-qty-input" class="form-label">Jumlah / Qty</label>
+          <input type="number" id="adjust-qty-input" class="form-control" placeholder="0" min="0">
+        </div>
+
+        <div class="form-group">
+          <label for="adjust-notes-input" class="form-label">Catatan (Opsional)</label>
+          <input type="text" id="adjust-notes-input" class="form-control" placeholder="Contoh: Kulakan dari Agen Jaya">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.app.closeModal('stock-adjust-modal')">Batal</button>
+        <button class="btn btn-primary" onclick="window.products.saveStockAdjustment()">Simpan Penyesuaian</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KELOLA KATEGORI -->
+  <div id="category-manager-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Kelola Kategori Produk</div>
+        <button class="icon-btn" onclick="window.app.closeModal('category-manager-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <label for="new-category-icon" style="display: none;">Ikon Kategori</label>
+          <input type="text" id="new-category-icon" class="form-control" style="width: 60px; text-align: center;" placeholder="📦" value="📦">
+          <label for="new-category-name" style="display: none;">Nama Kategori</label>
+          <input type="text" id="new-category-name" class="form-control" placeholder="Nama kategori baru..." style="flex: 1;">
+          <button class="btn btn-primary" onclick="window.products.addCategory()">Tambah</button>
+        </div>
+        <div id="category-manager-list" class="data-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FORM CATAT PENGELUARAN -->
+  <div id="expense-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Catat Pengeluaran Operasional</div>
+        <button class="icon-btn" onclick="window.app.closeModal('expense-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="expense-form" onsubmit="event.preventDefault(); window.expenses.saveExpense();">
+          <div class="form-group">
+            <label for="expense-category-select" class="form-label">Kategori Pengeluaran</label>
+            <select id="expense-category-select" class="select">
+              <option value="Operasional">📦 Perlengkapan & Operasional (Plastik, ATK, Lakban)</option>
+              <option value="Listrik & Air">⚡ Listrik, Air & Internet Toko</option>
+              <option value="Sewa Tempat">🏠 Sewa Ruko / Kios</option>
+              <option value="Gaji Karyawan">👥 Gaji / Upah Karyawan</option>
+              <option value="Transportasi">🚚 Transportasi & Bensin</option>
+              <option value="Makan Minum">🍱 Makan & Minum Karyawan</option>
+              <option value="Lain-lain">📝 Biaya Tak Terduga / Lain-lain</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="expense-amount-input" class="form-label">Nominal Pengeluaran (Rp) *</label>
+            <input type="number" id="expense-amount-input" class="form-control" placeholder="0" required>
+          </div>
+          <div class="form-group">
+            <label for="expense-date-input" class="form-label">Tanggal Pengeluaran</label>
+            <input type="date" id="expense-date-input" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="expense-notes-input" class="form-label">Keterangan / Catatan</label>
+            <input type="text" id="expense-notes-input" class="form-control" placeholder="Contoh: Beli kantong kresek 2 pack">
+          </div>
+          <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
+            <button type="button" class="btn btn-outline" onclick="window.app.closeModal('expense-modal')">Batal</button>
+            <button type="submit" class="btn btn-danger">Simpan Pengeluaran</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FORM HUTANG / PIUTANG -->
+  <div id="debt-form-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div id="debt-form-modal-title" class="modal-title">Tambah Catatan</div>
+        <button class="icon-btn" onclick="window.app.closeModal('debt-form-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="debt-form" onsubmit="event.preventDefault(); window.debts.saveDebt();">
+          <input type="hidden" id="debt-form-type" value="receivable">
+          <div class="form-group">
+            <label for="debt-form-name" class="form-label">Nama Orang / Supplier (Wajib)</label>
+            <input type="text" id="debt-form-name" class="form-control" placeholder="Nama..." required>
+          </div>
+          <div class="form-group">
+            <label for="debt-form-phone" class="form-label">No. WhatsApp / HP</label>
+            <input type="text" id="debt-form-phone" class="form-control" placeholder="08xxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label for="debt-form-amount" class="form-label">Total Tagihan (Rp) *</label>
+            <input type="number" id="debt-form-amount" class="form-control" placeholder="0" required>
+          </div>
+          <div class="form-group">
+            <label for="debt-form-due-date" class="form-label">Tanggal Jatuh Tempo (Janji Bayar)</label>
+            <input type="date" id="debt-form-due-date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="debt-form-notes" class="form-label">Keterangan Barang</label>
+            <input type="text" id="debt-form-notes" class="form-control" placeholder="Contoh: Bon beras dan minyak goreng">
+          </div>
+          <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
+            <button type="button" class="btn btn-outline" onclick="window.app.closeModal('debt-form-modal')">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Catatan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BAYAR CICILAN HUTANG/PIUTANG -->
+  <div id="debt-payment-modal" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Pembayaran / Cicilan</div>
+        <button class="icon-btn" onclick="window.app.closeModal('debt-payment-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="pay-debt-id">
+        <div style="margin-bottom: 12px;">
+          <div id="pay-debt-person" style="font-weight: 700; font-size: 1.1rem;">Nama Pelanggan</div>
+          <div class="text-xs text-muted">Sisa tagihan: <strong id="pay-debt-remaining" class="text-danger font-mono">Rp 0</strong></div>
+        </div>
+
+        <div class="form-group">
+          <label for="pay-debt-amount" class="form-label">Nominal Pembayaran (Rp)</label>
+          <input type="number" id="pay-debt-amount" class="form-control" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label for="pay-debt-notes" class="form-label">Catatan Pembayaran</label>
+          <input type="text" id="pay-debt-notes" class="form-control" placeholder="Contoh: Titip uang cash via kasir">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.app.closeModal('debt-payment-modal')">Batal</button>
+        <button class="btn btn-primary" onclick="window.debts.saveDebtPayment()">Catat Pembayaran ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY: KEYPAD PIN KEAMANAN -->
+  <div id="pin-overlay" class="pin-overlay hidden">
+    <div style="font-size: 2.5rem; margin-bottom: 10px;">🔒</div>
+    <div id="pin-title" style="font-size: 1.1rem; font-weight: 700; text-align: center;">Masukkan PIN Keamanan</div>
+    <p class="text-xs text-muted" style="margin-top: 4px;">PIN default Pemilik: <strong>1234</strong> | Kasir: <strong>0000</strong></p>
+    
+    <div class="pin-dots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="window.onPinKeyPress('1')">1</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('2')">2</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('3')">3</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('4')">4</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('5')">5</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('6')">6</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('7')">7</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('8')">8</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('9')">9</button>
+      <button class="pin-key" style="font-size: 0.9rem;" onclick="window.onPinKeyPress('cancel')">Batal</button>
+      <button class="pin-key" onclick="window.onPinKeyPress('0')">0</button>
+      <button class="pin-key" style="font-size: 1.1rem;" onclick="window.onPinKeyPress('backspace')">⌫</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- PRINTABLE RECEIPT HIDDEN HOLDER -->
+  <div id="receipt-print-area" style="display: none;"></div>
+
+  <!-- JAVASCRIPT MODULES -->
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/thermal-printer.js"></script>
+  <script src="js/pos.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/expenses.js"></script>
+  <script src="js/debts.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
