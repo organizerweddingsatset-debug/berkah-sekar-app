@@ -1,0 +1,116 @@
+/* ==========================================================================
+   TokoKu POS - Thermal Receipt (58mm / 80mm) & Print Styles
+   ========================================================================== */
+
+.receipt-preview-wrapper {
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  font-size: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  border: 1px dashed #cbd5e1;
+}
+
+.receipt-header {
+  text-align: center;
+  border-bottom: 1px dashed #64748b;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.receipt-shop-name {
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.receipt-shop-address {
+  font-size: 11px;
+  color: #475569;
+}
+
+.receipt-info {
+  font-size: 11px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #64748b;
+  padding-bottom: 6px;
+}
+
+.receipt-info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-items {
+  width: 100%;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #64748b;
+  padding-bottom: 8px;
+}
+
+.receipt-item-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.receipt-item-name {
+  font-weight: 600;
+}
+
+.receipt-item-sub {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.receipt-totals {
+  width: 100%;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #64748b;
+  padding-bottom: 6px;
+}
+
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.receipt-total-bold {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.receipt-footer {
+  text-align: center;
+  font-size: 10px;
+  color: #64748b;
+  padding-top: 4px;
+}
+
+/* Print Media Query */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    margin: 0;
+    padding: 2mm;
+    background: white;
+    color: black;
+    font-size: 11px;
+  }
+}

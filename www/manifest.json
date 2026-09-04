@@ -1,0 +1,27 @@
+{
+  "short_name": "TokoKu",
+  "name": "TokoKu POS - Pencatatan Toko & Kasir",
+  "description": "Aplikasi Kasir, Manajemen Stok, Laporan Laba Rugi, dan Pencatatan Toko",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#090d16",
+  "theme_color": "#059669",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "lang": "id-ID",
+  "categories": ["business", "finance", "productivity"]
+}

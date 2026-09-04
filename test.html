@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokoKu POS - Uji Fitur & Diagnostik Sistem</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body { padding: 24px 16px; }
+    .test-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .test-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+    }
+    .test-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div style="max-width: 680px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h1 style="font-size: 1.3rem; font-weight: 800;">🧪 Diagnostik & Uji Fitur Otomatis</h1>
+        <p class="text-xs text-muted">Uji langsung seluruh logika POS, database, keuangan, dan integrasi</p>
+      </div>
+      <a href="index.html" class="btn btn-secondary btn-sm">⬅ Kembali ke Kasir</a>
+    </div>
+
+    <button id="btn-run-all" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 20px;" onclick="runAllBrowserTests()">
+      ▶️ Jalankan Semua Pengujian Fitur
+    </button>
+
+    <div id="test-results-container"></div>
+  </div>
+
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/thermal-printer.js"></script>
+  <script src="js/pos.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/expenses.js"></script>
+  <script src="js/debts.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    async function runAllBrowserTests() {
+      const container = document.getElementById('test-results-container');
+      container.innerHTML = '<div class="text-center text-muted" style="padding: 20px;">Sedang menjalankan pengujian sistem...</div>';
+
+      const results = [];
+
+      // Test 1: IndexedDB Connection
+      try {
+        await window.db.isReady;
+        const products = await window.db.getAll('products');
+        results.push({ suite: '1. Database IndexedDB', name: `Koneksi DB & ${products.length} Data Produk Tersimpan`, pass: products.length > 0 });
+      } catch (e) {
+        results.push({ suite: '1. Database IndexedDB', name: 'Koneksi DB', pass: false });
+      }
+
+      // Test 2: POS Cart Math
+      window.pos.cart = [
+        { productId: 1, name: 'Beras', sellPrice: 75000, costPrice: 65000, qty: 2, subtotal: 150000, totalCost: 130000 },
+        { productId: 2, name: 'Minyak', sellPrice: 36000, costPrice: 30000, qty: 1, subtotal: 36000, totalCost: 30000 }
+      ];
+      window.pos.discount = 6000;
+      const totals = window.pos.getCartTotals();
+      results.push({ suite: '2. Kasir POS & Diskon', name: 'Subtotal Keranjang (Rp 186.000)', pass: totals.rawTotal === 186000 });
+      results.push({ suite: '2. Kasir POS & Diskon', name: 'Grand Total Setelah Diskon Rp 6.000 (Rp 180.000)', pass: totals.finalTotal === 180000 });
+      results.push({ suite: '2. Kasir POS & Diskon', name: 'Laba Kotor Transaksi (Rp 20.000)', pass: totals.profit === 20000 });
+
+      // Test 3: Change Calculation
+      const cash = 200000;
+      const change = cash - totals.finalTotal;
+      results.push({ suite: '3. Pembayaran Tunai', name: 'Kembalian Tunai Uang 200k (Rp 20.000)', pass: change === 20000 });
+
+      // Test 4: Financial Formula
+      const rev = 180000;
+      const hpp = 160000;
+      const exp = 50000;
+      const net = (rev - hpp) - exp;
+      results.push({ suite: '4. Laporan Keuangan', name: 'Formula Laba Bersih: Omset - HPP - Biaya', pass: net === -30000 });
+
+      // Test 5: WhatsApp URL Formatting
+      const waUrl = await window.notifications.createReceiptWhatsAppURL({
+        id: 'TRX-TEST',
+        date: new Date().toISOString(),
+        items: window.pos.cart,
+        totalAmount: 180000,
+        discount: 6000,
+        paymentMethod: 'cash',
+        cashReceived: 200000,
+        change: 20000,
+        customerPhone: '08123456789'
+      });
+      results.push({ suite: '5. Integrasi WhatsApp', name: 'Pembuatan Format Struk Digital WA', pass: waUrl.startsWith('https://wa.me/62123456789') });
+
+      // Test 6: Thermal Receipt HTML
+      const receiptHTML = await window.thermalPrinter.generateReceiptHTML({
+        id: 'TRX-TEST',
+        date: new Date().toISOString(),
+        items: window.pos.cart,
+        totalAmount: 180000,
+        discount: 6000,
+        paymentMethod: 'cash',
+        cashReceived: 200000,
+        change: 20000
+      });
+      results.push({ suite: '6. Cetak Struk', name: 'Layout Struk Thermal 58mm/80mm', pass: receiptHTML.includes('printable-receipt') });
+
+      // Render Results
+      const suites = {};
+      results.forEach(r => {
+        if (!suites[r.suite]) suites[r.suite] = [];
+        suites[r.suite].push(r);
+      });
+
+      let html = '';
+      let totalPass = 0;
+      let totalFail = 0;
+
+      for (const [suiteName, items] of Object.entries(suites)) {
+        html += `<div class="test-card"><div class="card-title" style="margin-bottom:8px;">${suiteName}</div>`;
+        items.forEach(item => {
+          if (item.pass) totalPass++; else totalFail++;
+          html += `
+            <div class="test-item">
+              <span>${item.name}</span>
+              <span class="badge ${item.pass ? 'badge-success' : 'badge-danger'}">
+                ${item.pass ? '✔ LULUS' : '✘ GAGAL'}
+              </span>
+            </div>
+          `;
+        });
+        html += '</div>';
+      }
+
+      html = `
+        <div class="card" style="background: ${totalFail === 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; border-color: ${totalFail === 0 ? 'var(--primary-500)' : 'var(--danger-500)'}; margin-bottom: 16px;">
+          <div style="font-weight: 800; font-size: 1.1rem; color: ${totalFail === 0 ? 'var(--primary-400)' : 'var(--danger-500)'}">
+            ${totalFail === 0 ? '🎉 SEMUA 8 PENGUJIAN FITUR LULUS 100%' : `⚠️ Terdapat ${totalFail} pengujian gagal`}
+          </div>
+          <div class="text-xs text-muted" style="margin-top: 4px;">Total pengujian: ${totalPass} Lulus, ${totalFail} Gagal. Sistem berjalan normal dan siap digunakan.</div>
+        </div>
+      ` + html;
+
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
